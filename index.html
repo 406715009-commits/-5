@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>เรียงประโยค – Nombor Ratus Dan Ribu</title>
+<style>
+:root{--bg:#fff8e7;--ink:#26324a;--card:#fff;--line:#26324a;--blue:#3a86ff;--green:#2ab37a;--yel:#ffbe0b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b2236;--ink:#fff4d6;--card:#2a3452;--line:#fff4d6}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Mali","Sarabun","Noto Sans Thai",system-ui,sans-serif;font-size:20px;line-height:1.4}
+main{max-width:640px;margin:0 auto;padding:14px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h1{font-size:22px;margin:0}
+.stars{font-size:24px;font-weight:700;white-space:nowrap}
+.panel{background:var(--card);border:3px solid var(--line);border-radius:22px;padding:16px;margin:12px 0;box-shadow:0 5px 0 var(--line)}
+button{font:inherit;font-weight:700;color:#26324a;background:var(--yel);border:3px solid var(--line);border-radius:18px;padding:10px 16px;min-height:54px;cursor:pointer;box-shadow:0 4px 0 var(--line);touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+button:focus-visible{outline:4px solid var(--blue);outline-offset:2px}
+.lvl{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.lvl button{flex:1;min-width:120px;background:#fff;font-size:16px}
+.lvl button.on{background:var(--yel)}
+.bar{height:14px;background:rgba(128,128,128,.3);border-radius:9px;overflow:hidden;margin-bottom:10px}
+.bar i{display:block;height:100%;background:var(--green);width:0;transition:width .3s}
+.th{text-align:center;font-size:22px;font-weight:700;margin:6px 0}
+.num{text-align:center;font-size:44px;font-weight:800;margin:0}
+.tip{text-align:center;font-size:17px;margin:4px 0 8px}
+.slot{min-height:76px;border:3px dashed var(--line);border-radius:18px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:8px 0}
+.slot .ph{opacity:.6;font-size:17px}
+.dot{font-size:28px;font-weight:800}
+.bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}
+.t{background:#fff;font-size:21px;min-height:52px}
+.slot .t{background:#e8f1ff}
+.slot.ok .t{background:#9be8c4}
+.slot.no .t{background:#ffb3b8}
+.fb{min-height:60px;text-align:center;font-weight:700}
+.hint{background:#e8f1ff;color:#26324a;border-radius:14px;padding:8px;font-size:17px;font-weight:400}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.hide{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>🧩 เรียงประโยคมลายู</h1><div class="stars" id="stars">⭐ 0</div></header>
+<div class="panel">
+<div class="lvl" id="lvl"></div>
+<div id="game"></div>
+</div>
+</main>
+<script>
+var N={1:"satu",2:"dua",3:"tiga",4:"empat",5:"lima",6:"enam",7:"tujuh",8:"lapan",9:"sembilan"};
+function my(n){var k=Math.floor(n/1000),c=Math.floor(n%1000/100),s="";
+ if(k)s=(k==1?"seribu":N[k]+" ribu");
+ if(c)s+=(s?" ":"")+(c==1?"seratus":N[c]+" ratus");return s}
+var NAMES=["Ali","Siti","Aminah","Hasan","Zainab"];
+var THINGS=[["buku","หนังสือ","เล่ม"],["pensel","ดินสอ","แท่ง"],["manik","ลูกปัด","เม็ด"],["kelereng","ลูกแก้ว","ลูก"],["bunga","ดอกไม้","ดอก"],["epal","แอปเปิล","ลูก"]];
+var LV=[["🟥 หลักร้อย","h"],["🟦 หลักพัน","t"],["🌈 ผสม","m"]],lv=0,stars=0,round=0,TOTAL=5;
+var $=function(i){return document.getElementById(i)};
+function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+function shuf(a){return a.slice().sort(function(){return Math.random()-.5})}
+function pickNum(){var m=LV[lv][1],h=Math.floor(Math.random()*9)+1,k=Math.floor(Math.random()*4)+1;
+ if(m=="h")return h*100;if(m=="t")return k*1000;
+ return Math.random()<.5?h*100:k*1000+h*100}
+function mk(){var n=pickNum(),nm=rnd(NAMES),t=rnd(THINGS),pat=Math.random()<.5,s,th;
+ if(pat){s=nm+" ada "+my(n)+" "+t[0];th=nm+" มี"+t[1]+" "+n.toLocaleString("en-US")+" "+t[2]}
+ else{s="Ada "+my(n)+" "+t[0]+" di kelas";th="ในห้องเรียนมี"+t[1]+" "+n.toLocaleString("en-US")+" "+t[2]}
+ return {n:n,w:s.split(" "),th:th}}
+var cur,sel,tried,done;
+function start(){round=0;stars+=0;next()}
+function next(){
+ if(round>=TOTAL){$("game").innerHTML='<div style="text-align:center"><div style="font-size:60px">🏆</div><p>จบแล้ว! ทำครบ '+TOTAL+' ข้อ</p><button onclick="start()">🔁 เล่นอีกรอบ</button></div>';return}
+ round++;cur=mk();sel=[];tried=false;done=false;
+ $("game").innerHTML='<div class="bar"><i style="width:'+(round/TOTAL*100)+'%"></i></div>'+
+ '<p class="tip">ข้อ '+round+' / '+TOTAL+' &nbsp; แตะคำเรียงให้เป็นประโยคที่ถูกต้อง</p>'+
+ '<p class="num">'+cur.n.toLocaleString("en-US")+'</p><p class="th">'+cur.th+'</p>'+
+ '<div class="slot" id="slot"></div><div class="bank" id="bank"></div>'+
+ '<div class="fb" id="fb"></div>'+
+ '<div class="row"><button id="clr" style="background:#fff">↩️ เริ่มใหม่</button><button id="chk">✅ ตรวจคำตอบ</button><button id="nx" class="hide" style="background:#9be8c4">ข้อต่อไป ▶️</button></div>';
+ $("clr").onclick=function(){if(done)return;sel=[];$("fb").innerHTML="";draw()};
+ $("chk").onclick=check;$("nx").onclick=next;
+ order=shuf(cur.w.map(function(x,i){return i}));draw()}
+var order=[];
+function draw(){
+ var s=$("slot");s.className="slot";s.innerHTML="";
+ if(!sel.length){s.innerHTML='<span class="ph">แตะคำด้านล่างเพื่อวางที่นี่</span>'}
+ sel.forEach(function(i,p){var b=document.createElement("button");b.className="t";b.textContent=cur.w[i];b.onclick=function(){if(done)return;sel.splice(p,1);draw()};s.appendChild(b)});
+ if(sel.length){var d=document.createElement("span");d.className="dot";d.textContent=".";s.appendChild(d)}
+ var bk=$("bank");bk.innerHTML="";
+ order.forEach(function(i){if(sel.indexOf(i)>-1)return;var b=document.createElement("button");b.className="t";b.textContent=cur.w[i];b.onclick=function(){if(done)return;sel.push(i);draw()};bk.appendChild(b)})}
+function beep(ok){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=ok?760:210;g.gain.value=.12;o.start();o.stop(a.currentTime+(ok?.2:.3))}catch(e){}}
+function check(){
+ if(done)return;
+ if(sel.length<cur.w.length){$("fb").textContent="ใช้คำให้ครบทุกคำก่อนนะ 🙂";return}
+ var got=sel.map(function(i){return cur.w[i]}).join(" "),want=cur.w.join(" "),ok=got==want;
+ beep(ok);
+ if(ok){done=true;var g=tried?1:3;stars+=g;$("stars").textContent="⭐ "+stars;
+  $("slot").className="slot ok";$("fb").innerHTML=["เก่งมาก! 🎉","สุดยอด! 🌟","ถูกต้อง! 👏"][round%3]+" +"+g+" ดาว<div class='hint'>"+want+". = "+cur.th+"</div>";
+  $("nx").classList.remove("hide");$("chk").classList.add("hide");$("clr").classList.add("hide")}
+ else{tried=true;$("slot").className="slot no";
+  $("fb").innerHTML="ยังไม่ถูกนะ 💪<div class='hint'>💡 ประโยคมลายูเรียงแบบ: "+(cur.w[0]=="Ada"?"<b>Ada</b> + จำนวน + สิ่งของ + <b>di kelas</b>":"ชื่อคน + <b>ada</b> + จำนวน + สิ่งของ")+"<br>เลขอ่านจากพันไปร้อย เช่น <b>"+my(cur.n)+"</b></div>";
+  setTimeout(function(){if(!done){sel=[];draw()}},1800)}}
+function lvls(){$("lvl").innerHTML="";
+ LV.forEach(function(l,i){var b=document.createElement("button");b.textContent=l[0];b.className=i==lv?"on":"";b.onclick=function(){lv=i;lvls();start()};$("lvl").appendChild(b)})}
+lvls();start();
+</script>
+</body>
+</html>
